@@ -1,0 +1,11 @@
+{
+  "name": "@communitycare/design-tokens",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Shared colors, spacing and typography for web (Tailwind) and mobile.",
+  "exports": {
+    ".": "./src/index.ts",
+    "./theme.css": "./src/theme.css"
+  }
+}

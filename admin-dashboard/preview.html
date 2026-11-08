@@ -1,0 +1,718 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CommunityCare Admin</title>
+  <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script>tailwind.config = { darkMode: "class", theme: { extend: { fontFamily: { sans: ["Inter", "system-ui", "sans-serif"] } } } };</script>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.26.4/babel.min.js"></script>
+  <style>body{background:#fff}html.dark body{background:#09090b}</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel" data-presets="react">
+const { useState, useMemo, useEffect, useRef } = React;
+
+/* ------------------------------------------------------------------ *
+ * CommunityCare AI — Admin Dashboard (sample UI, mock data only)
+ * React + Tailwind. No external chart/icon libraries required.
+ * ------------------------------------------------------------------ */
+
+// ---------- Icons (inline SVG, 24x24 stroke) ----------
+const ICONS = {
+  dashboard: "M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z",
+  facility: "M3 21h18M5 21V7l7-4 7 4v14M9 9h1m4 0h1M9 13h1m4 0h1M10 21v-4h4v4",
+  check: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z",
+  upload: "M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 4v12m0-12l-4 4m4-4l4 4",
+  services: "M12 6v12m6-6H6",
+  map: "M9 20l-5-2V4l5 2m0 14l6-2m-6 2V6m6 12l5 2V6l-5-2m0 14V4m0 0L9 6",
+  megaphone: "M11 5L6 9H3v6h3l5 4V5zm4.5 3.5a5 5 0 010 7M19 5a9 9 0 010 14",
+  ai: "M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.4-4 8-9 8a9.9 9.9 0 01-4-.8L3 20l1.3-3.9A7.6 7.6 0 013 12c0-4.4 4-8 9-8s9 3.6 9 8z",
+  users: "M17 20h5v-2a3 3 0 00-5.4-1.8M17 20H7m10 0v-2c0-.7-.1-1.3-.4-1.8M7 20H2v-2a3 3 0 015.4-1.8M7 20v-2c0-.7.1-1.3.4-1.8m0 0a5 5 0 019.2 0M15 7a3 3 0 11-6 0 3 3 0 016 0z",
+  audit: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4",
+  settings: "M10.3 4.3c.4-1.8 3-1.8 3.4 0a1.7 1.7 0 002.6 1.1c1.5-.9 3.3.8 2.4 2.4a1.7 1.7 0 001 2.5c1.8.5 1.8 3 0 3.5a1.7 1.7 0 00-1 2.6c.9 1.5-.9 3.3-2.4 2.4a1.7 1.7 0 00-2.6 1c-.4 1.8-3 1.8-3.4 0a1.7 1.7 0 00-2.6-1c-1.5.9-3.3-.9-2.4-2.4a1.7 1.7 0 00-1-2.6c-1.8-.4-1.8-3 0-3.4a1.7 1.7 0 001-2.6c-.9-1.5.9-3.3 2.4-2.4 1 .6 2.3.1 2.6-1.1zM15 12a3 3 0 11-6 0 3 3 0 016 0z",
+  search: "M21 21l-5.2-5.2M17 10a7 7 0 11-14 0 7 7 0 0114 0z",
+  bell: "M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 00-4-5.7V5a2 2 0 10-4 0v.3A6 6 0 006 11v3.2c0 .5-.2 1-.6 1.4L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9",
+  menu: "M4 6h16M4 12h16M4 18h16",
+  x: "M6 18L18 6M6 6l12 12",
+  alert: "M12 9v2m0 4h.01M5.1 19h13.8c1.5 0 2.5-1.7 1.7-3L13.7 4c-.8-1.3-2.6-1.3-3.4 0L3.4 16c-.8 1.3.2 3 1.7 3z",
+  copy: "M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z",
+  clock: "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z",
+  link: "M13.8 10.2a4 4 0 010 5.6l-3 3a4 4 0 01-5.6-5.6l1.5-1.5m4.5-1.5a4 4 0 010-5.6l3-3a4 4 0 015.6 5.6l-1.5 1.5",
+};
+
+function Icon({ name, className = "w-5 h-5" }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d={ICONS[name]} />
+    </svg>
+  );
+}
+
+// ---------- Mock data (shaped after the documented schema) ----------
+const NAV = [
+  { section: "Overview", items: [{ key: "dashboard", label: "Dashboard", icon: "dashboard" }] },
+  {
+    section: "Directory",
+    items: [
+      { key: "facilities", label: "Facilities", icon: "facility" },
+      { key: "verification", label: "Verification queue", icon: "check", badge: 42 },
+      { key: "imports", label: "Data imports", icon: "upload" },
+      { key: "services", label: "Services", icon: "services" },
+      { key: "locations", label: "Locations (PSGC)", icon: "map" },
+    ],
+  },
+  {
+    section: "Engagement",
+    items: [
+      { key: "programs", label: "Health programs", icon: "megaphone" },
+      { key: "assistant", label: "AI assistant", icon: "ai" },
+    ],
+  },
+  {
+    section: "Administration",
+    items: [
+      { key: "users", label: "Users & roles", icon: "users" },
+      { key: "audit", label: "Audit logs", icon: "audit" },
+      { key: "settings", label: "Settings", icon: "settings" },
+    ],
+  },
+];
+
+const MODULE_NOTES = {
+  facilities: "Facility records, facility types, public contacts, opening hours, verification.",
+  imports: "Source adapters, staging, normalization, deduplication, import batch history.",
+  services: "Service catalog and facility-to-service relationships.",
+  locations: "Regions, provinces, cities/municipalities, barangays, coordinate search.",
+  programs: "Public announcements, campaign dates, participating facilities.",
+  assistant: "Approved sources, retrieval, prompts, provider adapter, answer citations.",
+  users: "Registration, login, profiles, role assignment and account status.",
+  audit: "Administrative actions, protected-resource access events, security review.",
+  settings: "Platform configuration, stale-record threshold, rate limits, environments.",
+};
+
+const KPIS = [
+  { label: "Published facilities", value: "18,426", delta: "+312 this week", tone: "teal", icon: "facility" },
+  { label: "Pending review", value: "42", delta: "9 older than 7 days", tone: "amber", icon: "clock" },
+  { label: "Stale records", value: "1,208", delta: "Not verified in 180+ days", tone: "rose", icon: "alert" },
+  { label: "Duplicate candidates", value: "87", delta: "From last NHFR import", tone: "violet", icon: "copy" },
+  { label: "Records with traceable source", value: "96.4%", delta: "+1.2 pts vs last month", tone: "sky", icon: "link" },
+];
+
+const STATUS = {
+  verified: { label: "Verified", bar: "bg-teal-500", chip: "bg-teal-50 text-teal-700 ring-teal-600/20" },
+  pending_review: { label: "Pending review", bar: "bg-amber-400", chip: "bg-amber-50 text-amber-700 ring-amber-600/20" },
+  draft: { label: "Draft", bar: "bg-slate-300", chip: "bg-slate-100 text-slate-600 ring-slate-500/20" },
+  stale: { label: "Stale", bar: "bg-rose-400", chip: "bg-rose-50 text-rose-700 ring-rose-600/20" },
+  rejected: { label: "Rejected", bar: "bg-slate-500", chip: "bg-slate-200 text-slate-700 ring-slate-600/20" },
+};
+
+const STATUS_COUNTS = { verified: 16840, pending_review: 42, draft: 376, stale: 1208, rejected: 64 };
+
+const REGIONS = [
+  { name: "NCR", total: 3120, verified: 2950 },
+  { name: "Region IV-A", total: 2860, verified: 2610 },
+  { name: "Region III", total: 2410, verified: 2180 },
+  { name: "Region VII", total: 1690, verified: 1420 },
+  { name: "Region VI", total: 1540, verified: 1290 },
+  { name: "Region XI", total: 1180, verified: 1050 },
+  { name: "Region V", total: 1090, verified: 880 },
+  { name: "CAR", total: 640, verified: 590 },
+];
+
+const SEARCH_TREND = [62, 70, 66, 74, 81, 78, 85, 88, 84, 91, 95, 102, 99, 108];
+
+const INITIAL_QUEUE = [
+  { id: "FAC-01J8K2", name: "Brgy. San Isidro Health Station", type: "Barangay Health Station", location: "Antipolo City, Rizal", change: "Opening hours updated", source: "Facility staff", submittedBy: "R. Santos", age: "2h", status: "pending_review" },
+  { id: "FAC-01J8K7", name: "Quezon City RHU 3", type: "Rural Health Unit", location: "Quezon City, NCR", change: "New services: TB-DOTS, Immunization", source: "NHFR import #214", submittedBy: "Import job", age: "5h", status: "pending_review" },
+  { id: "FAC-01J8M1", name: "Cebu Northern Infirmary", type: "Infirmary", location: "Danao City, Cebu", change: "Coordinates conflict (1.8 km)", source: "NHFR import #214", submittedBy: "Import job", age: "1d", status: "pending_review", flag: "Conflicting coordinates" },
+  { id: "FAC-01J8N4", name: "Davao Riverside Lying-in Clinic", type: "Birthing Home", location: "Davao City, Davao del Sur", change: "Contact number changed", source: "Facility staff", submittedBy: "You", age: "1d", status: "pending_review", ownEdit: true },
+  { id: "FAC-01J8P9", name: "Tarlac Provincial Health Office Clinic", type: "Health Center", location: "Tarlac City, Tarlac", change: "Possible duplicate of FAC-01H2Z3", source: "NHFR import #214", submittedBy: "Import job", age: "3d", status: "pending_review", flag: "Duplicate candidate" },
+  { id: "FAC-01J8Q2", name: "Iloilo City Health Center II", type: "Health Center", location: "Iloilo City, Iloilo", change: "Address normalized", source: "Data verifier", submittedBy: "M. Reyes", age: "8d", status: "pending_review" },
+];
+
+const IMPORTS = [
+  { id: "#214", source: "DOH NHFR — full extract", started: "Nov 7, 09:12", status: "needs_review", processed: 18950, flagged: 133, progress: 100 },
+  { id: "#215", source: "PSA PSGC — Q3 release", started: "Nov 7, 11:40", status: "running", processed: 29402, flagged: 0, progress: 64 },
+  { id: "#213", source: "Facility self-service corrections", started: "Nov 6, 18:00", status: "completed", processed: 214, flagged: 3, progress: 100 },
+  { id: "#212", source: "DOH NHFR — delta", started: "Nov 3, 09:00", status: "failed", processed: 0, flagged: 0, progress: 22, error: "Schema mismatch: column 'facility_code' missing" },
+];
+
+const IMPORT_STATUS = {
+  running: { label: "Running", chip: "bg-sky-50 text-sky-700 ring-sky-600/20", bar: "bg-sky-500" },
+  needs_review: { label: "Needs review", chip: "bg-amber-50 text-amber-700 ring-amber-600/20", bar: "bg-amber-400" },
+  completed: { label: "Completed", chip: "bg-teal-50 text-teal-700 ring-teal-600/20", bar: "bg-teal-500" },
+  failed: { label: "Failed", chip: "bg-rose-50 text-rose-700 ring-rose-600/20", bar: "bg-rose-500" },
+};
+
+const AUDIT = [
+  { actor: "M. Reyes", role: "Verifier", action: "approved", target: "Marikina City Health Office", time: "12 min ago" },
+  { actor: "System", role: "Import job", action: "flagged 87 duplicate candidates in", target: "batch #214", time: "3 h ago" },
+  { actor: "J. Dela Cruz", role: "System admin", action: "granted Verifier role to", target: "A. Villanueva", time: "5 h ago" },
+  { actor: "R. Santos", role: "Facility staff", action: "submitted a correction for", target: "Brgy. San Isidro Health Station", time: "6 h ago" },
+  { actor: "M. Reyes", role: "Verifier", action: "rejected", target: "Pasig Wellness Clinic (missing source)", time: "1 d ago" },
+];
+
+const ROADMAP = [
+  { phase: "Foundation", weeks: "1–2", done: 100 },
+  { phase: "Data pipeline", weeks: "3–4", done: 100 },
+  { phase: "Public directory", weeks: "5–6", done: 85 },
+  { phase: "Admin workflow", weeks: "7–8", done: 60 },
+  { phase: "Mobile app", weeks: "9–10", done: 20 },
+  { phase: "AI assistant", weeks: "11–12", done: 5 },
+  { phase: "Booking pilot", weeks: "13–14", done: 0 },
+  { phase: "Pilot readiness", weeks: "15–16", done: 0 },
+];
+
+// ---------- Small building blocks ----------
+const TONES = {
+  teal: "bg-teal-50 text-teal-700",
+  amber: "bg-amber-50 text-amber-700",
+  rose: "bg-rose-50 text-rose-700",
+  violet: "bg-violet-50 text-violet-700",
+  sky: "bg-sky-50 text-sky-700",
+};
+
+function Card({ title, subtitle, action, children, className = "" }) {
+  return (
+    <section className={`bg-white rounded-xl border border-slate-200 shadow-sm ${className}`}>
+      {(title || action) && (
+        <header className="flex items-start justify-between gap-4 px-5 pt-5">
+          <div>
+            <h2 className="text-sm font-semibold text-slate-900">{title}</h2>
+            {subtitle && <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>}
+          </div>
+          {action}
+        </header>
+      )}
+      <div className="p-5">{children}</div>
+    </section>
+  );
+}
+
+function Chip({ className, children }) {
+  return <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ring-1 ring-inset whitespace-nowrap ${className}`}>{children}</span>;
+}
+
+function KpiCard({ label, value, delta, tone, icon }) {
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 flex flex-col gap-3">
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-medium text-slate-500">{label}</span>
+        <span className={`grid place-items-center w-8 h-8 rounded-lg ${TONES[tone]}`}>
+          <Icon name={icon} className="w-4 h-4" />
+        </span>
+      </div>
+      <div className="text-2xl font-semibold tracking-tight text-slate-900 tabular-nums">{value}</div>
+      <div className="text-xs text-slate-500">{delta}</div>
+    </div>
+  );
+}
+
+// Stacked horizontal bar for verification states
+function StatusBreakdown() {
+  const total = Object.values(STATUS_COUNTS).reduce((a, b) => a + b, 0);
+  return (
+    <div>
+      <div className="flex h-3 w-full overflow-hidden rounded-full bg-slate-100 gap-0.5">
+        {Object.entries(STATUS_COUNTS).map(([k, v]) => (
+          <div key={k} className={STATUS[k].bar} style={{ width: `${Math.max((v / total) * 100, 0.6)}%` }} title={`${STATUS[k].label}: ${v.toLocaleString()}`} />
+        ))}
+      </div>
+      <ul className="mt-4 grid grid-cols-2 sm:grid-cols-5 gap-3">
+        {Object.entries(STATUS_COUNTS).map(([k, v]) => (
+          <li key={k} className="flex flex-col">
+            <span className="flex items-center gap-1.5 text-xs text-slate-500">
+              <span className={`w-2 h-2 rounded-full ${STATUS[k].bar}`} />
+              {STATUS[k].label}
+            </span>
+            <span className="text-sm font-semibold text-slate-900 tabular-nums">{v.toLocaleString()}</span>
+            <span className="text-[11px] text-slate-400 tabular-nums">{((v / total) * 100).toFixed(1)}%</span>
+          </li>
+        ))}
+      </ul>
+      <p className="mt-4 text-[11px] leading-relaxed text-slate-500 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
+        Platform verification describes our own review process. It is <strong>not</strong> a DOH license or accreditation status.
+      </p>
+    </div>
+  );
+}
+
+// Region bars: total vs verified
+function RegionBars() {
+  const max = Math.max(...REGIONS.map((r) => r.total));
+  return (
+    <ul className="space-y-3">
+      {REGIONS.map((r) => (
+        <li key={r.name} className="grid grid-cols-[88px_1fr_72px] items-center gap-3 text-xs">
+          <span className="text-slate-600 truncate">{r.name}</span>
+          <div className="relative h-2.5 rounded-full bg-slate-100">
+            <div className="absolute inset-y-0 left-0 rounded-full bg-slate-300" style={{ width: `${(r.total / max) * 100}%` }} />
+            <div className="absolute inset-y-0 left-0 rounded-full bg-teal-500" style={{ width: `${(r.verified / max) * 100}%` }} />
+          </div>
+          <span className="text-right tabular-nums text-slate-700">
+            {r.verified.toLocaleString()}
+            <span className="text-slate-400"> / {r.total.toLocaleString()}</span>
+          </span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+// Sparkline-style area chart (SVG)
+function SearchTrend() {
+  const w = 320, h = 96, pad = 4;
+  const max = Math.max(...SEARCH_TREND), min = Math.min(...SEARCH_TREND);
+  const pts = SEARCH_TREND.map((v, i) => [pad + (i * (w - pad * 2)) / (SEARCH_TREND.length - 1), h - pad - ((v - min) / (max - min)) * (h - pad * 2)]);
+  const line = pts.map((p, i) => `${i ? "L" : "M"}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(" ");
+  const area = `${line} L${pts[pts.length - 1][0]},${h} L${pts[0][0]},${h} Z`;
+  const last = pts[pts.length - 1];
+  return (
+    <div>
+      <div className="flex items-end gap-6 mb-3">
+        <div>
+          <div className="text-2xl font-semibold text-slate-900 tabular-nums">108k</div>
+          <div className="text-xs text-slate-500">searches today</div>
+        </div>
+        <div>
+          <div className="text-2xl font-semibold text-slate-900 tabular-nums">71%</div>
+          <div className="text-xs text-slate-500">opened a facility profile</div>
+        </div>
+      </div>
+      <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-24" preserveAspectRatio="none" role="img" aria-label="Daily searches over the last 14 days, trending up">
+        <defs>
+          <linearGradient id="trendFill" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stopColor="#14b8a6" stopOpacity="0.25" />
+            <stop offset="100%" stopColor="#14b8a6" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <path d={area} fill="url(#trendFill)" />
+        <path d={line} fill="none" stroke="#0d9488" strokeWidth="2" vectorEffect="non-scaling-stroke" />
+        <circle cx={last[0]} cy={last[1]} r="3.5" fill="#0d9488" />
+      </svg>
+      <div className="flex justify-between text-[11px] text-slate-400 mt-1">
+        <span>Oct 25</span>
+        <span>Nov 7</span>
+      </div>
+    </div>
+  );
+}
+
+// Ring gauge for AI grounding
+function Ring({ value, label, color = "#0d9488" }) {
+  const r = 28, c = 2 * Math.PI * r;
+  return (
+    <div className="flex flex-col items-center gap-1.5">
+      <div className="relative w-20 h-20">
+        <svg viewBox="0 0 72 72" className="w-20 h-20 -rotate-90">
+          <circle cx="36" cy="36" r={r} fill="none" stroke="#e2e8f0" strokeWidth="7" />
+          <circle cx="36" cy="36" r={r} fill="none" stroke={color} strokeWidth="7" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - value / 100)} />
+        </svg>
+        <div className="absolute inset-0 grid place-items-center text-sm font-semibold text-slate-900 tabular-nums">{value}%</div>
+      </div>
+      <span className="text-[11px] text-center text-slate-500 leading-tight">{label}</span>
+    </div>
+  );
+}
+
+// ---------- Verification queue (interactive) ----------
+function VerificationQueue({ rows, onDecide, compact = false }) {
+  const [filter, setFilter] = useState("all");
+  const visible = useMemo(() => {
+    if (filter === "flagged") return rows.filter((r) => r.flag);
+    if (filter === "pending") return rows.filter((r) => r.status === "pending_review");
+    return rows;
+  }, [rows, filter]);
+
+  return (
+    <Card
+      title="Verification queue"
+      subtitle="Edits and imports awaiting review. Editing and approval are separated (four-eyes)."
+      action={
+        <div className="flex rounded-lg border border-slate-200 p-0.5 text-xs">
+          {[["all", "All"], ["pending", "Pending"], ["flagged", "Flagged"]].map(([k, l]) => (
+            <button key={k} onClick={() => setFilter(k)} className={`px-2.5 py-1 rounded-md ${filter === k ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100"}`}>
+              {l}
+            </button>
+          ))}
+        </div>
+      }
+    >
+      <div className="-mx-5 -mb-5 overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-left text-[11px] uppercase tracking-wide text-slate-500 border-y border-slate-200 bg-slate-50">
+              <th className="px-5 py-2.5 font-medium">Facility</th>
+              <th className="px-3 py-2.5 font-medium">Proposed change</th>
+              {!compact && <th className="px-3 py-2.5 font-medium">Source</th>}
+              <th className="px-3 py-2.5 font-medium">Waiting</th>
+              <th className="px-3 py-2.5 font-medium">Status</th>
+              <th className="px-5 py-2.5 font-medium text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {visible.map((r) => (
+              <tr key={r.id} className="hover:bg-slate-50/60 align-top">
+                <td className="px-5 py-3 min-w-[220px]">
+                  <div className="font-medium text-slate-900">{r.name}</div>
+                  <div className="text-xs text-slate-500">
+                    {r.type} · {r.location}
+                  </div>
+                  <div className="text-[11px] text-slate-400 font-mono mt-0.5">{r.id}</div>
+                </td>
+                <td className="px-3 py-3 min-w-[200px]">
+                  <div className="text-slate-700">{r.change}</div>
+                  {r.flag && (
+                    <span className="mt-1 inline-flex items-center gap-1 text-[11px] text-rose-700">
+                      <Icon name="alert" className="w-3.5 h-3.5" /> {r.flag}
+                    </span>
+                  )}
+                </td>
+                {!compact && (
+                  <td className="px-3 py-3 text-xs text-slate-600 whitespace-nowrap">
+                    {r.source}
+                    <div className="text-slate-400">by {r.submittedBy}</div>
+                  </td>
+                )}
+                <td className={`px-3 py-3 text-xs whitespace-nowrap tabular-nums ${r.age.endsWith("d") && parseInt(r.age) >= 7 ? "text-rose-600 font-medium" : "text-slate-600"}`}>{r.age}</td>
+                <td className="px-3 py-3">
+                  <Chip className={STATUS[r.status].chip}>{STATUS[r.status].label}</Chip>
+                </td>
+                <td className="px-5 py-3 text-right whitespace-nowrap">
+                  {r.status === "pending_review" ? (
+                    r.ownEdit ? (
+                      <span className="text-[11px] text-slate-400" title="You submitted this change; another verifier must approve it.">Needs another reviewer</span>
+                    ) : (
+                      <div className="inline-flex gap-1.5">
+                        <button onClick={() => onDecide(r.id, "rejected")} className="px-2.5 py-1 text-xs rounded-md border border-slate-300 text-slate-700 hover:bg-slate-100">
+                          Reject
+                        </button>
+                        <button onClick={() => onDecide(r.id, "verified")} className="px-2.5 py-1 text-xs rounded-md bg-teal-600 text-white hover:bg-teal-700">
+                          Approve
+                        </button>
+                      </div>
+                    )
+                  ) : (
+                    <button onClick={() => onDecide(r.id, "pending_review")} className="text-xs text-slate-500 hover:text-slate-800 underline underline-offset-2">
+                      Undo
+                    </button>
+                  )}
+                </td>
+              </tr>
+            ))}
+            {visible.length === 0 && (
+              <tr>
+                <td colSpan={6} className="px-5 py-10 text-center text-sm text-slate-500">
+                  Nothing here. The queue is clear.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </Card>
+  );
+}
+
+function ImportBatches() {
+  return (
+    <Card title="Import batches" subtitle="Records load into staging first, never straight over published data." action={<button className="text-xs font-medium text-teal-700 hover:text-teal-800">+ New import</button>}>
+      <ul className="space-y-4">
+        {IMPORTS.map((b) => (
+          <li key={b.id}>
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <div className="text-sm font-medium text-slate-900 truncate">
+                  <span className="text-slate-400 font-mono mr-1.5">{b.id}</span>
+                  {b.source}
+                </div>
+                <div className="text-xs text-slate-500">
+                  {b.started} · {b.processed.toLocaleString()} processed{b.flagged ? ` · ${b.flagged} flagged` : ""}
+                </div>
+              </div>
+              <Chip className={IMPORT_STATUS[b.status].chip}>{IMPORT_STATUS[b.status].label}</Chip>
+            </div>
+            <div className="mt-2 h-1.5 rounded-full bg-slate-100 overflow-hidden">
+              <div className={`h-full rounded-full ${IMPORT_STATUS[b.status].bar} ${b.status === "running" ? "animate-pulse" : ""}`} style={{ width: `${b.progress}%` }} />
+            </div>
+            {b.error && <p className="mt-1.5 text-[11px] text-rose-700 font-mono">{b.error}</p>}
+          </li>
+        ))}
+      </ul>
+    </Card>
+  );
+}
+
+function AssistantHealth() {
+  return (
+    <Card title="AI assistant" subtitle="Answers grounded only in approved public records. Last 7 days." action={<Chip className="bg-sky-50 text-sky-700 ring-sky-600/20">Phase 6 · beta</Chip>}>
+      <div className="grid grid-cols-3 gap-2">
+        <Ring value={94} label="Answers with citations" />
+        <Ring value={88} label="Sources fresh (< 180d)" color="#0ea5e9" />
+        <Ring value={7} label="Said 'no info found'" color="#f59e0b" />
+      </div>
+      <dl className="mt-5 grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
+        <dt className="text-slate-500">Questions answered</dt>
+        <dd className="text-right font-medium text-slate-900 tabular-nums">12,940</dd>
+        <dt className="text-slate-500">Emergency redirects shown</dt>
+        <dd className="text-right font-medium text-slate-900 tabular-nums">318</dd>
+        <dt className="text-slate-500">Blocked prompt-injection attempts</dt>
+        <dd className="text-right font-medium text-slate-900 tabular-nums">21</dd>
+        <dt className="text-slate-500">Rate-limited requests</dt>
+        <dd className="text-right font-medium text-slate-900 tabular-nums">146</dd>
+      </dl>
+    </Card>
+  );
+}
+
+function AuditFeed() {
+  return (
+    <Card title="Recent admin activity" subtitle="From audit_logs. No medical data is recorded here." action={<button className="text-xs font-medium text-teal-700 hover:text-teal-800">View all</button>}>
+      <ol className="relative border-l border-slate-200 ml-1.5 space-y-4">
+        {AUDIT.map((a, i) => (
+          <li key={i} className="ml-4">
+            <span className="absolute -left-[5px] mt-1.5 w-2.5 h-2.5 rounded-full bg-white border-2 border-teal-500" />
+            <p className="text-sm text-slate-700">
+              <span className="font-medium text-slate-900">{a.actor}</span> <span className="text-slate-400 text-xs">({a.role})</span> {a.action} <span className="font-medium text-slate-900">{a.target}</span>
+            </p>
+            <p className="text-[11px] text-slate-400 mt-0.5">{a.time}</p>
+          </li>
+        ))}
+      </ol>
+    </Card>
+  );
+}
+
+function Roadmap() {
+  return (
+    <Card title="Release roadmap" subtitle="Indicative 16-week plan from the technical design.">
+      <ol className="space-y-2.5">
+        {ROADMAP.map((p, i) => (
+          <li key={p.phase} className="grid grid-cols-[18px_1fr_44px] items-center gap-3 text-xs">
+            <span className={`grid place-items-center w-[18px] h-[18px] rounded-full text-[10px] font-semibold ${p.done === 100 ? "bg-teal-600 text-white" : p.done > 0 ? "bg-teal-100 text-teal-800" : "bg-slate-100 text-slate-500"}`}>{i + 1}</span>
+            <div>
+              <div className="flex justify-between">
+                <span className="text-slate-700">{p.phase}</span>
+                <span className="text-slate-400">wk {p.weeks}</span>
+              </div>
+              <div className="mt-1 h-1.5 rounded-full bg-slate-100 overflow-hidden">
+                <div className="h-full bg-teal-500 rounded-full" style={{ width: `${p.done}%` }} />
+              </div>
+            </div>
+            <span className="text-right tabular-nums text-slate-600">{p.done}%</span>
+          </li>
+        ))}
+      </ol>
+    </Card>
+  );
+}
+
+// ---------- Layout ----------
+function Sidebar({ active, onNavigate, open, onClose, pending }) {
+  return (
+    <>
+      <div className={`fixed inset-0 z-30 bg-slate-900/40 lg:hidden ${open ? "block" : "hidden"}`} onClick={onClose} />
+      <aside className={`fixed z-40 inset-y-0 left-0 w-64 bg-[#13293f] text-slate-300 flex flex-col transition-transform lg:translate-x-0 ${open ? "translate-x-0" : "-translate-x-full"}`}>
+        <div className="flex items-center gap-2.5 px-5 h-16 border-b border-white/10">
+          <div className="grid place-items-center w-8 h-8 rounded-lg bg-teal-500 text-white font-bold text-sm">C</div>
+          <div className="leading-tight">
+            <div className="text-white font-semibold text-sm">CommunityCare AI</div>
+            <div className="text-[11px] text-slate-400">Admin console</div>
+          </div>
+          <button className="ml-auto lg:hidden text-slate-400 hover:text-white" onClick={onClose} aria-label="Close menu">
+            <Icon name="x" />
+          </button>
+        </div>
+        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-6">
+          {NAV.map((group) => (
+            <div key={group.section}>
+              <div className="px-2 mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500">{group.section}</div>
+              <ul className="space-y-0.5">
+                {group.items.map((item) => {
+                  const isActive = active === item.key;
+                  const badge = item.key === "verification" ? pending : item.badge;
+                  return (
+                    <li key={item.key}>
+                      <button
+                        onClick={() => onNavigate(item.key)}
+                        className={`w-full flex items-center gap-3 px-2.5 py-2 rounded-lg text-sm transition-colors ${isActive ? "bg-white/10 text-white" : "hover:bg-white/5 hover:text-white"}`}
+                        aria-current={isActive ? "page" : undefined}
+                      >
+                        <Icon name={item.icon} className={`w-[18px] h-[18px] ${isActive ? "text-teal-400" : ""}`} />
+                        <span className="flex-1 text-left">{item.label}</span>
+                        {badge ? <span className="text-[10px] font-semibold bg-amber-400 text-slate-900 rounded-full px-1.5 py-0.5 tabular-nums">{badge}</span> : null}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))}
+        </nav>
+        <div className="p-4 border-t border-white/10 text-[11px] text-slate-400">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-400" /> API /api/v1 · healthy
+          </div>
+          <div className="mt-1">Environment: <span className="text-amber-300">staging</span></div>
+        </div>
+      </aside>
+    </>
+  );
+}
+
+function Topbar({ onMenu, title }) {
+  return (
+    <header className="sticky top-0 z-20 h-16 bg-white/90 backdrop-blur border-b border-slate-200 flex items-center gap-3 px-4 sm:px-6">
+      <button className="lg:hidden text-slate-600" onClick={onMenu} aria-label="Open menu">
+        <Icon name="menu" />
+      </button>
+      <h1 className="text-base font-semibold text-slate-900 truncate">{title}</h1>
+      <div className="ml-auto flex items-center gap-2 sm:gap-3">
+        <label className="hidden md:flex items-center gap-2 w-72 h-9 px-3 rounded-lg border border-slate-200 bg-slate-50 text-sm text-slate-500 focus-within:ring-2 focus-within:ring-teal-500/40">
+          <Icon name="search" className="w-4 h-4" />
+          <input className="bg-transparent outline-none flex-1 placeholder:text-slate-400 text-slate-800" placeholder="Search facilities, PSGC code, batch…" />
+        </label>
+        <button className="relative grid place-items-center w-9 h-9 rounded-lg text-slate-600 hover:bg-slate-100" aria-label="Notifications">
+          <Icon name="bell" />
+          <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-rose-500" />
+        </button>
+        <div className="flex items-center gap-2 pl-2 sm:border-l border-slate-200">
+          <div className="grid place-items-center w-8 h-8 rounded-full bg-teal-100 text-teal-800 text-xs font-semibold">MR</div>
+          <div className="hidden sm:block leading-tight">
+            <div className="text-sm font-medium text-slate-900">Maria Reyes</div>
+            <div className="text-[11px] text-slate-500">Data verifier</div>
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+function Toast({ toast }) {
+  if (!toast) return null;
+  return (
+    <div className="fixed bottom-5 right-5 z-50 flex items-center gap-2 rounded-lg bg-slate-900 text-white text-sm px-4 py-2.5 shadow-lg">
+      <Icon name="check" className="w-4 h-4 text-teal-400" />
+      {toast}
+    </div>
+  );
+}
+
+function Placeholder({ k }) {
+  const label = NAV.flatMap((g) => g.items).find((i) => i.key === k)?.label;
+  return (
+    <Card>
+      <div className="py-16 text-center">
+        <div className="mx-auto grid place-items-center w-12 h-12 rounded-xl bg-teal-50 text-teal-700">
+          <Icon name={NAV.flatMap((g) => g.items).find((i) => i.key === k)?.icon || "dashboard"} className="w-6 h-6" />
+        </div>
+        <h2 className="mt-4 text-base font-semibold text-slate-900">{label}</h2>
+        <p className="mt-1 text-sm text-slate-500 max-w-md mx-auto">{MODULE_NOTES[k]}</p>
+        <p className="mt-4 text-xs text-slate-400">Screen not designed yet in this sample.</p>
+      </div>
+    </Card>
+  );
+}
+
+// ---------- Page ----------
+function AdminDashboard() {
+  const [active, setActive] = useState("dashboard");
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [queue, setQueue] = useState(INITIAL_QUEUE);
+  const [toast, setToast] = useState(null);
+
+  const pending = 36 + queue.filter((r) => r.status === "pending_review").length;
+
+  const decide = (id, status) => {
+    setQueue((q) => q.map((r) => (r.id === id ? { ...r, status } : r)));
+    const row = queue.find((r) => r.id === id);
+    const msg = status === "verified" ? `Approved and published: ${row.name}` : status === "rejected" ? `Rejected: ${row.name} (reason required in real flow)` : `Returned to queue: ${row.name}`;
+    setToast(msg);
+    clearTimeout(window.__ccToast);
+    window.__ccToast = setTimeout(() => setToast(null), 2600);
+  };
+
+  const navigate = (k) => {
+    setActive(k);
+    setMenuOpen(false);
+  };
+
+  const title = NAV.flatMap((g) => g.items).find((i) => i.key === active)?.label;
+
+  return (
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-800">
+      <Sidebar active={active} onNavigate={navigate} open={menuOpen} onClose={() => setMenuOpen(false)} pending={pending} />
+      <div className="lg:pl-64">
+        <Topbar onMenu={() => setMenuOpen(true)} title={title} />
+        <main className="p-4 sm:p-6 space-y-6 max-w-[1400px]">
+          {active === "dashboard" && (
+            <>
+              <div className="flex flex-wrap items-end justify-between gap-3">
+                <div>
+                  <p className="text-sm text-slate-500">Saturday, November 7, 2026</p>
+                  <h2 className="text-xl font-semibold text-slate-900">Good morning, Maria</h2>
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={() => navigate("imports")} className="h-9 px-3 rounded-lg border border-slate-300 bg-white text-sm text-slate-700 hover:bg-slate-50">Start import</button>
+                  <button onClick={() => navigate("verification")} className="h-9 px-3 rounded-lg bg-teal-600 text-white text-sm font-medium hover:bg-teal-700">Review queue ({pending})</button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
+                {KPIS.map((k) => (
+                  <KpiCard key={k.label} {...k} />
+                ))}
+              </div>
+
+              <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                <Card title="Verification status" subtitle="All facility records by platform review state" className="xl:col-span-2">
+                  <StatusBreakdown />
+                </Card>
+                <Card title="Public directory usage" subtitle="Daily searches, last 14 days">
+                  <SearchTrend />
+                </Card>
+              </div>
+
+              <VerificationQueue rows={queue} onDecide={decide} compact />
+
+              <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                <Card title="Verified records by region" subtitle="Verified vs total facilities (PSGC region)">
+                  <RegionBars />
+                  <div className="mt-4 flex gap-4 text-[11px] text-slate-500">
+                    <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-teal-500" />Verified</span>
+                    <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-slate-300" />Total</span>
+                  </div>
+                </Card>
+                <ImportBatches />
+                <AssistantHealth />
+              </div>
+
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                <AuditFeed />
+                <Roadmap />
+              </div>
+            </>
+          )}
+
+          {active === "verification" && <VerificationQueue rows={queue} onDecide={decide} />}
+          {active === "imports" && <ImportBatches />}
+          {active === "assistant" && <AssistantHealth />}
+          {active === "audit" && <AuditFeed />}
+          {!["dashboard", "verification", "imports", "assistant", "audit"].includes(active) && <Placeholder k={active} />}
+        </main>
+      </div>
+      <Toast toast={toast} />
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<AdminDashboard />);
+  </script>
+</body>
+</html>

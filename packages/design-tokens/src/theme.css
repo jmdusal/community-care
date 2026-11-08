@@ -1,0 +1,25 @@
+/*
+ * Tailwind CSS v4 theme for CommunityCare AI.
+ * Imported by apps/web/src/index.css. Values mirror src/colors.ts and src/typography.ts.
+ */
+@theme {
+  --font-sans: 'Inter', system-ui, sans-serif;
+
+  --color-navy-700: #1a3350;
+  --color-navy-900: #13293f;
+
+  --color-brand-50: #f0fdfa;
+  --color-brand-100: #ccfbf1;
+  --color-brand-500: #14b8a6;
+  --color-brand-600: #0d9488;
+  --color-brand-700: #0f766e;
+
+  --color-status-verified: #10b981;
+  --color-status-pending: #f59e0b;
+  --color-status-draft: #a1a1aa;
+  --color-status-stale: #f43f5e;
+  --color-status-rejected: #52525b;
+
+  --radius-card: 0.75rem;
+  --radius-control: 0.5rem;
+}

@@ -1,0 +1,9 @@
+Health Facility Code,Facility Name,Health Facility Type,Street Name and #,Region PSGC,Province PSGC,City/Municipality PSGC,Barangay PSGC,Latitude,Longitude,Landline Number,Email Address,Official Website
+DOH-0001,Brgy. San Isidro Health Station,Barangay Health Station,"Purok 3, San Isidro",0400000000,0405800000,0405802000,0405802001,14.6255,121.1245,(02) 8123 4567,,
+DOH-0002,Antipolo City Health Office,Health Center,M.L. Quezon Ave,0400000000,0405800000,0405802000,0405802002,14.5866,121.1760,(02) 8697 1234,cho@example.org,
+DOH-0003,Quezon City RHU 3,Rural Health Unit,Commonwealth Ave,1300000000,,1381300000,1381300001,14.6760,121.0437,(02) 8988 4242,,
+,Cainta Lying-in Clinic,Birthing Home,A. Bonifacio Ave,0400000000,0405800000,0405804000,0405804001,14.5786,121.1222,,,
+DOH-0005,,Clinic,,0400000000,0405800000,0405802000,,,,,,
+DOH-0006,Island Clinic,Clinic,Somewhere,0400000000,0405800000,0405802000,0405802001,35.0000,140.0000,,,
+DOH-0007,Mystery Health Center,Health Center,Unknown St,0900000000,0999900000,0999999000,,,,,,
+DOH-0002,Antipolo City Health Office (repeat),Health Center,M.L. Quezon Ave,0400000000,0405800000,0405802000,0405802002,14.5866,121.1760,,,

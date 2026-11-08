@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.DS_Store
+*.log
+
+# Laravel app keeps its own .gitignore in apps/api
+
+# Local environment overrides (web app)
+.env.local
+
+# Internal documents (kept locally, not published)
+*.pdf

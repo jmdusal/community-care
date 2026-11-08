@@ -1,0 +1,2 @@
+source_record_id,name,type,address,region_psgc,province_psgc,city_psgc,barangay_psgc,latitude,longitude,phone,email,website,services
+CC-1,Sample Template Clinic,Clinic,1 Sample St,0400000000,0405800000,0405802000,0405802001,14.6,121.12,(02) 0000 0000,clinic@example.org,https://example.org,Primary care; Immunization

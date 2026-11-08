@@ -1,0 +1,5 @@
+@import 'tailwindcss';
+@import '@communitycare/design-tokens/theme.css';
+
+/* Dark mode follows a .dark class on <html>, toggled from the top bar. */
+@custom-variant dark (&:where(.dark, .dark *));
