@@ -10,3 +10,7 @@ dist/
 
 # Internal documents (kept locally, not published)
 *.pdf
+
+# Coding-assistant setup (kept locally, not published)
+.claude/
+CLAUDE.md
